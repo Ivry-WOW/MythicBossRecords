@@ -1,5 +1,9 @@
 # Changelog
 
+## V.1.6.4
+
+- Update test (no changes).
+
 ## V.1.6.3
 
 - Automatic updates: MBR Tools checks for a new version **every minute** (combat log still every 15 minutes). Existing installs switch by themselves.

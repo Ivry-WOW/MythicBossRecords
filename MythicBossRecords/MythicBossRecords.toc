@@ -2,7 +2,7 @@
 ## Title: |cfff5b937Mythic|r Boss Records
 ## Notes: Saves the best DPS on every Mythic+ boss, per class and spec, with date and key level. /mbr
 ## Author: Ivryr
-## Version: 1.6.3
+## Version: 1.6.4
 ## SavedVariables: MythicBossRecordsDB
 
 Data.lua
