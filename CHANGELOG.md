@@ -1,5 +1,10 @@
 # Changelog
 
+## V.1.6.2
+
+- Fixed: "Sync logs" said your combat log was not read when its fights were already known from other players.
+- "Sync logs" also asks everyone for the records you are missing.
+
 ## V.1.6.1
 
 - Contact (IGN: Ivryr) in the bottom-right corner of the window.

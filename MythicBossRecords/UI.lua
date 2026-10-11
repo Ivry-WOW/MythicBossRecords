@@ -823,7 +823,15 @@ end
 -- everyone for what you are missing; or explain how the log gets read
 function UI:SyncLogs()
 	local own = ns.OwnLogRecords()
+	if #own == 0 and ns.db.localPackId then
+		-- the log was read, but nothing in it is good enough for the tops (or it had no +9 boss kills)
+		ns.Sync:Hello()
+		StaticPopup_Show("MBR_UPDATE", "|cffffd100Your combat log was read|r, but it has no +9 boss kills good enough for the tops yet.\n\n" ..
+			"New keys are added automatically every 15 minutes (MBR Tools). Asking everyone for the records you are missing now.")
+		return
+	end
 	if #own == 0 then
+		ns.Sync:Hello()
 		StaticPopup_Show("MBR_UPDATE", "|cffffd100Your combat log has not been read yet.|r\n\n" ..
 			"WoW addons cannot open files, so a small tool next to the addon reads it:\n\n" ..
 			"Close WoW, open Interface\\AddOns\\MythicBossRecords and double-click |cffffd100MBR Tools.cmd|r, " ..

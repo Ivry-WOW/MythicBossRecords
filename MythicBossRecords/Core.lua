@@ -10,7 +10,7 @@ local ADDON, ns = ...
 local PREFIX = "|cfff5b937MBR|r: "
 -- the version lives here (not only in the .toc: WoW reads the .toc only when the game starts,
 -- so after replacing files + /reload it would still report the old one)
-ns.VERSION = "1.6.1"
+ns.VERSION = "1.6.2"
 -- only keys of this level and higher count (live, sync, combat-log imports)
 ns.MIN_LEVEL = 9
 ns.ACCENT = { 0.96, 0.73, 0.22 }
@@ -331,6 +331,7 @@ function ns.MergeRecord(encID, e)
 	if (not x.affixes or #x.affixes == 0) and e.affixes and #e.affixes > 0 then x.affixes = e.affixes end
 	if not x.tf and e.tf then x.tf = e.tf end
 	if e.mine then x.mine = true; x.src = nil end
+	if e.own then x.own = true end -- also in your own combat log
 	if e.run and not x.run then x.run = e.run end
 	if changed then x.seen = time() end
 	return changed and "updated" or "dup", x
@@ -345,8 +346,11 @@ function ns.ApplyLocalPack()
 	ns.LOCAL_PACK = nil
 	if not pack or not pack.records then return end
 	db.importedPacks = db.importedPacks or {}
-	if db.importedPacks[pack.id] then return end
+	-- V.1.6.2: read the pack once more so fights you already had from others count as yours too
+	if db.importedPacks[pack.id] and db.ownMarkV162 then return end
+	db.ownMarkV162 = true
 	local me, now, n, share = UnitName("player"), time(), 0, {}
+	local kept = 0
 	for _, r in ipairs(pack.records) do
 		local aff = {}
 		for a in (r[13] or ""):gmatch("%d+") do aff[#aff + 1] = tonumber(a) end
@@ -358,6 +362,7 @@ function ns.ApplyLocalPack()
 			mine = (r[2] == me) or nil, own = true,
 		}
 		local status, rec = ns.MergeRecord(r[1], e)
+		if status then kept = kept + 1 end
 		if status == "new" or status == "updated" then
 			n = n + 1
 			share[#share + 1] = { r[1], rec }
@@ -368,6 +373,9 @@ function ns.ApplyLocalPack()
 	if n > 0 then
 		ns.Print(format("Your combat log: |cff00ff00%d|r new records - sharing them with everyone.", n))
 		if ns.Sync then C_Timer.After(20, function() ns.Sync:Share(share) end) end
+	end
+	if n == 0 and kept > 0 then
+		ns.Print(format("Your combat log: |cff00ff00%d|r records, all already known. Sync logs sends them again.", kept))
 	end
 end
 
