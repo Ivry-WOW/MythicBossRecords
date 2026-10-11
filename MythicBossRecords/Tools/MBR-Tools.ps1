@@ -73,6 +73,7 @@ function Update-Addon {
     if (-not $zipUrl -and $repo -notlike 'http*') {
         $raw = "https://raw.githubusercontent.com/$repo/main"
         $core = (Invoke-WebRequest -Uri "$raw/MythicBossRecords/Core.lua" -Headers $hdr -UseBasicParsing -TimeoutSec 60).Content
+        if ($core -is [byte[]]) { $core = [Text.Encoding]::UTF8.GetString($core) }
         $m = [regex]::Match($core, 'ns\.VERSION\s*=\s*"([^"]+)"')
         if (-not $m.Success) { throw 'no version found on the update page' }
         $latest = $m.Groups[1].Value; $zipUrl = "$raw/MythicBossRecords.zip"
