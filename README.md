@@ -20,13 +20,13 @@ WoW **Legion 7.3.5** addon (Tauri). Best boss DPS in Mythic+ for every boss, cla
 
 ## Install
 
-1. Download `MythicBossRecords.zip` from [Releases](../../releases/latest).
+1. Download **[MythicBossRecords.zip](https://github.com/Ivry-WOW/MythicBossRecords/raw/main/MythicBossRecords.zip)**.
 2. Extract it to `World of Warcraft\Interface\AddOns\` so you get `AddOns\MythicBossRecords\MythicBossRecords.toc`.
 3. Double-click **`MBR Tools.cmd`** in that folder and choose **1 – Turn on automatic**. Do this once.
 
 Step 3 sets up a Windows task that runs every 15 minutes and at logon. It:
 - imports new boss fights from your combat log;
-- installs new addon versions from this page.
+- installs new addon versions from this page (the version in `MythicBossRecords/Core.lua`, or a newer GitHub release).
 
 In game, type `/combatlog` before a key so WoW writes the log.
 
@@ -54,7 +54,7 @@ In game, type `/combatlog` before a key so WoW writes the log.
 
 - Your combat log is read **only on your PC**. Nothing is uploaded.
 - The addon shares only boss records in game (name, class, spec, DPS, key).
-- MBR Tools only downloads releases from this repository.
+- MBR Tools only downloads updates from this repository.
 
 ---
 Made by **Ivry** · Miracle · Evermoon

@@ -1,4 +1,6 @@
-## Mythic Boss Records V.1.6
+# Changelog
+
+## V.1.6
 
 - Only keys **+9 and higher** are counted.
 - Tooltips and tops follow the current **Tyrannical / Fortified** week.

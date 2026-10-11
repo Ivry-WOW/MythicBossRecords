@@ -1,6 +1,6 @@
 # Mythic Boss Records - tools (run by "MBR Tools.cmd" or the Windows task (every 15 minutes))
 #   -Action import   read the new part of your WoWCombatLog.txt -> LocalLogData.lua (shared by the addon)
-#   -Action update   install the newest addon version (from the release page in update-source.txt)
+#   -Action update   install the newest addon version (from the GitHub page in update-source.txt)
 #   -Action auto     both: what the scheduled task runs, silently
 #   -FromStart       read the whole combat log again
 # Nothing is ever sent anywhere: the log is read on your PC, the addon shares the results in game.
@@ -60,17 +60,30 @@ function Update-Addon {
     if ($repo -eq '' -or $repo -like '*OWNER*') { Log 'Updates are not set up yet (no release page in Tools\update-source.txt).'; return $true }
     $current = Get-LocalVersion
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    $api = if ($repo -like 'http*') { $repo } else { "https://api.github.com/repos/$repo/releases/latest" }
-    $release = Invoke-RestMethod -Uri $api -Headers @{ 'User-Agent' = 'MBR-Tools' } -TimeoutSec 60
-    $latest = ($release.tag_name -replace '^[vV]', '')
+    $hdr = @{ 'User-Agent' = 'MBR-Tools' }
+    $latest = $null; $zipUrl = $null
+    # 1) the latest GitHub release (tag vX.Y + a zip file), if there is one
+    try {
+        $api = if ($repo -like 'http*') { $repo } else { "https://api.github.com/repos/$repo/releases/latest" }
+        $release = Invoke-RestMethod -Uri $api -Headers $hdr -TimeoutSec 60
+        $asset = $release.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1
+        if ($asset) { $latest = ($release.tag_name -replace '^[vV]', ''); $zipUrl = $asset.browser_download_url }
+    } catch {}
+    # 2) otherwise the repository itself: version from Core.lua, MythicBossRecords.zip on the main branch
+    if (-not $zipUrl -and $repo -notlike 'http*') {
+        $raw = "https://raw.githubusercontent.com/$repo/main"
+        $core = (Invoke-WebRequest -Uri "$raw/MythicBossRecords/Core.lua" -Headers $hdr -UseBasicParsing -TimeoutSec 60).Content
+        $m = [regex]::Match($core, 'ns\.VERSION\s*=\s*"([^"]+)"')
+        if (-not $m.Success) { throw 'no version found on the update page' }
+        $latest = $m.Groups[1].Value; $zipUrl = "$raw/MythicBossRecords.zip"
+    }
+    if (-not $zipUrl) { throw 'no release found' }
     if ((VersionNum $latest) -le (VersionNum $current)) { Log "Addon is up to date (V.$current)."; return $true }
-    $asset = $release.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1
-    if (-not $asset) { throw "release $latest has no zip file" }
     $work = Join-Path ([IO.Path]::GetTempPath()) ('mbr-update-' + [guid]::NewGuid())
     try {
         New-Item -ItemType Directory -Path $work | Out-Null
         $zip = Join-Path $work 'addon.zip'
-        Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zip -UseBasicParsing -TimeoutSec 300
+        Invoke-WebRequest -Uri $zipUrl -Headers $hdr -OutFile $zip -UseBasicParsing -TimeoutSec 300
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         [IO.Compression.ZipFile]::ExtractToDirectory($zip, (Join-Path $work 'x'))
         $src = Join-Path $work 'x\MythicBossRecords'
