@@ -47,9 +47,9 @@ WoW **Legion 7.3.5** addon (Tauri). Shows the best boss DPS in Mythic+ for every
 2. Extract it to `World of Warcraft\Interface\AddOns\`. You should get `AddOns\MythicBossRecords\MythicBossRecords.toc`.
 3. Double-click **`MBR Tools.cmd`** in that folder and choose **1 – Turn on automatic**. You only do this once.
 
-From then on, every 15 minutes and at logon, MBR Tools:
-- imports new boss fights from your combat log;
-- installs new addon versions from this page.
+From then on MBR Tools runs by itself (also after Windows starts):
+- every minute it checks this page and installs a new addon version;
+- every 15 minutes it imports new boss fights from your combat log.
 
 In game, type `/combatlog` before a key so WoW writes the log.
 

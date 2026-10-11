@@ -815,7 +815,7 @@ function UI.UpdateText()
 		and ("|cff20ff20Mythic Boss Records V." .. ns.newerVersion .. " is out|r (you have V." .. ns.VERSION .. ").")
 		or ("You have Mythic Boss Records V." .. ns.VERSION .. ".")
 	return head .. "\n\nWoW addons cannot download files, so the update is done outside the game:\n\n" ..
-		"|cffffd100If \"automatic\" is on in MBR Tools.cmd|r: it updates by itself within 15 minutes - just restart WoW.\n\n" ..
+		"|cffffd100If \"automatic\" is on in MBR Tools.cmd|r: it updates by itself within a minute - just restart WoW.\n\n" ..
 		"|cffffd100Otherwise|r: close WoW, open the folder Interface\\AddOns\\MythicBossRecords and double-click |cffffd100MBR Tools.cmd|r, then 3 (Update the addon now)."
 end
 

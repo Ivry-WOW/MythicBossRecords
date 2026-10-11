@@ -1,7 +1,7 @@
 @echo off
 rem Mythic Boss Records - tools. Double-click for the menu.
-rem   1 = automatic: every 15 minutes (and at Windows start) your new combat log is read and the
-rem       addon is updated when a new version is released. Nothing to do after that.
+rem   1 = automatic: every minute it checks for a new version, every 15 minutes it reads your new combat log;
+rem       nothing to do after that.
 setlocal
 cd /d "%~dp0"
 set "TASK=MythicBossRecords Tools"
@@ -19,7 +19,7 @@ echo  ===========================
 echo.
 schtasks /Query /TN "%TASK%" >nul 2>&1 && (echo  Automatic import + updates: ON) || (echo  Automatic import + updates: off)
 echo.
-echo   1. Turn on automatic (combat log import + addon updates, every 15 minutes)
+echo   1. Turn on automatic (addon updates every minute, combat log every 15 minutes)
 echo   2. Import my combat log now
 echo   3. Update the addon now
 echo   4. Read my whole combat log again (from the start)
@@ -37,11 +37,11 @@ if errorlevel 2 (call :run import & pause & goto menu)
 echo.
 echo Reading your combat log (the first time can take a few minutes)...
 call :run auto
-schtasks /Create /F /TN "%TASK%" /SC MINUTE /MO 15 /TR "wscript.exe \"%~dp0Tools\run-hidden.vbs\"" >nul
+schtasks /Create /F /TN "%TASK%" /SC MINUTE /MO 1 /TR "wscript.exe \"%~dp0Tools\run-hidden.vbs\"" >nul
 if errorlevel 1 (echo Could not create the scheduled task. & pause & goto menu)
 schtasks /Create /F /TN "%TASK% (logon)" /SC ONLOGON /TR "wscript.exe \"%~dp0Tools\run-hidden.vbs\"" >nul 2>&1
 echo.
-echo Done. From now on it runs by itself every 15 minutes. In WoW: /reload or log in to load new data.
+echo Done. From now on: update check every minute, combat log every 15 minutes. In WoW: /reload or log in to load new data.
 pause
 goto menu
 

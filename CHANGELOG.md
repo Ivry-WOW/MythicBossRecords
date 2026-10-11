@@ -1,5 +1,9 @@
 # Changelog
 
+## V.1.6.3
+
+- Automatic updates: MBR Tools checks for a new version **every minute** (combat log still every 15 minutes). Existing installs switch by themselves.
+
 ## V.1.6.2
 
 - Fixed: "Sync logs" said your combat log was not read when its fights were already known from other players.

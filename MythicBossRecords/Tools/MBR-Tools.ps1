@@ -1,7 +1,8 @@
-# Mythic Boss Records - tools (run by "MBR Tools.cmd" or the Windows task (every 15 minutes))
+# Mythic Boss Records - tools (run by "MBR Tools.cmd" or the Windows task, every minute)
 #   -Action import   read the new part of your WoWCombatLog.txt -> LocalLogData.lua (shared by the addon)
 #   -Action update   install the newest addon version (from the GitHub page in update-source.txt)
-#   -Action auto     both: what the scheduled task runs, silently
+#   -Action auto     what the scheduled task runs, silently: update check every minute,
+#                    combat log import every 15 minutes
 #   -FromStart       read the whole combat log again
 # Nothing is ever sent anywhere: the log is read on your PC, the addon shares the results in game.
 param([string]$Action = 'auto', [switch]$FromStart)
@@ -62,24 +63,28 @@ function Update-Addon {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     $hdr = @{ 'User-Agent' = 'MBR-Tools' }
     $latest = $null; $zipUrl = $null
-    # 1) the latest GitHub release (tag vX.Y + a zip file), if there is one
-    try {
+    # 1) the repository itself: version from Core.lua, MythicBossRecords.zip on the main branch
+    if ($repo -notlike 'http*') {
+        try {
+            $raw = "https://raw.githubusercontent.com/$repo/main"
+            $core = (Invoke-WebRequest -Uri "$raw/MythicBossRecords/Core.lua" -Headers $hdr -UseBasicParsing -TimeoutSec 30).Content
+            if ($core -is [byte[]]) { $core = [Text.Encoding]::UTF8.GetString($core) }
+            $m = [regex]::Match($core, 'ns\.VERSION\s*=\s*"([^"]+)"')
+            if ($m.Success) { $latest = $m.Groups[1].Value; $zipUrl = "$raw/MythicBossRecords.zip" }
+        } catch {}
+    }
+    # 2) otherwise the latest GitHub release (tag vX.Y + a zip file)
+    if (-not $zipUrl) {
         $api = if ($repo -like 'http*') { $repo } else { "https://api.github.com/repos/$repo/releases/latest" }
         $release = Invoke-RestMethod -Uri $api -Headers $hdr -TimeoutSec 60
         $asset = $release.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1
         if ($asset) { $latest = ($release.tag_name -replace '^[vV]', ''); $zipUrl = $asset.browser_download_url }
-    } catch {}
-    # 2) otherwise the repository itself: version from Core.lua, MythicBossRecords.zip on the main branch
-    if (-not $zipUrl -and $repo -notlike 'http*') {
-        $raw = "https://raw.githubusercontent.com/$repo/main"
-        $core = (Invoke-WebRequest -Uri "$raw/MythicBossRecords/Core.lua" -Headers $hdr -UseBasicParsing -TimeoutSec 60).Content
-        if ($core -is [byte[]]) { $core = [Text.Encoding]::UTF8.GetString($core) }
-        $m = [regex]::Match($core, 'ns\.VERSION\s*=\s*"([^"]+)"')
-        if (-not $m.Success) { throw 'no version found on the update page' }
-        $latest = $m.Groups[1].Value; $zipUrl = "$raw/MythicBossRecords.zip"
     }
     if (-not $zipUrl) { throw 'no release found' }
-    if ((VersionNum $latest) -le (VersionNum $current)) { Log "Addon is up to date (V.$current)."; return $true }
+    if ((VersionNum $latest) -le (VersionNum $current)) {
+        if ($Action -ne 'auto') { Log "Addon is up to date (V.$current)." }    # not every minute in the log
+        return $true
+    }
     $work = Join-Path ([IO.Path]::GetTempPath()) ('mbr-update-' + [guid]::NewGuid())
     try {
         New-Item -ItemType Directory -Path $work | Out-Null
@@ -106,6 +111,19 @@ function Update-Addon {
     return $true
 }
 
+# ---------------------------------------------------------------- schedule
+# older versions ran every 15 minutes: switch an existing task to every minute (once)
+function Set-Schedule {
+    $mark = Join-Path $DataDir 'schedule-1min.txt'
+    if (Test-Path $mark) { return }
+    $task = 'MythicBossRecords Tools'
+    & schtasks.exe /Query /TN $task 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { return }                     # automatic is off: leave it off
+    $vbs = Join-Path $Tools 'run-hidden.vbs'
+    & schtasks.exe /Create /F /TN $task /SC MINUTE /MO 1 /TR "wscript.exe \"$vbs\"" 2>&1 | Out-Null
+    if ($LASTEXITCODE -eq 0) { Set-Content -Path $mark -Value (Get-Date -Format s); Log 'Automatic: update check every minute now.' }
+}
+
 # ---------------------------------------------------------------- main
 $ok = $true
 try {
@@ -113,8 +131,18 @@ try {
         'import' { $ok = Import-CombatLog }
         'update' { $ok = Update-Addon }
         default  {
-            try { [void](Import-CombatLog) } catch { Log ('Combat log import failed: ' + $_.Exception.Message); $ok = $false }
-            try { [void](Update-Addon) } catch { Log ('Update check failed: ' + $_.Exception.Message); $ok = $false }
+            try { Set-Schedule } catch {}
+            # the menu could not replace itself while it was open: do it now
+            $newCmd = Join-Path $AddonDir 'MBR Tools.cmd.new'
+            if (Test-Path $newCmd) { try { Move-Item $newCmd (Join-Path $AddonDir 'MBR Tools.cmd') -Force } catch {} }
+            try { [void](Update-Addon) } catch { $ok = $false }      # every minute (errors: no internet, etc.)
+            # combat log: every 15 minutes (it reads only the new part)
+            $stamp = Join-Path $DataDir 'lastimport.txt'
+            $due = -not (Test-Path $stamp) -or ((Get-Date) - (Get-Item $stamp).LastWriteTime).TotalMinutes -ge 14.5
+            if ($due -or $FromStart) {
+                Set-Content -Path $stamp -Value (Get-Date -Format s)
+                try { [void](Import-CombatLog) } catch { Log ('Combat log import failed: ' + $_.Exception.Message); $ok = $false }
+            }
         }
     }
 } catch {
