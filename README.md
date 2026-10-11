@@ -1,32 +1,55 @@
+![Mythic Boss Records](screenshots/banner.png)
+
 # Mythic Boss Records
 
-WoW **Legion 7.3.5** addon (Tauri). Best boss DPS in Mythic+ for every boss, class and spec, shared between everyone who has the addon.
+WoW **Legion 7.3.5** addon (Tauri). Shows the best boss DPS in Mythic+ for every boss, class and spec. Records are shared between everyone who has the addon.
 
-![Dungeons](docs/1-dungeons.png)
+**[⬇ Download MythicBossRecords.zip](https://github.com/Ivry-WOW/MythicBossRecords/raw/main/MythicBossRecords.zip)** · [Changelog](CHANGELOG.md)
 
 ## Features
 
 - **Boss-only DPS.** Adds don't count. Only keys **+9 and higher**.
-- **Tyrannical / Fortified.** Separate tops for each, and the window follows the current week.
-- **Class tops per boss.** Classes are sorted best to worst.
-- **Shared automatically.** Records sync with your guild and with everyone on the server who has the addon (hidden channel `MBRSync`).
-- **Your combat log counts.** MBR Tools reads your `WoWCombatLog.txt` and the addon shares the results.
-- **Player search.** See any player's records.
-- **In-game buttons:** `Update`, `Sync logs`, `Users` (who has the addon), `Settings`.
+- **Tyrannical / Fortified.** Separate tops; the window follows the current week.
+- **Class tops per boss**, sorted best to worst.
+- **Shared automatically** with your guild and everyone on the server who has the addon.
+- **Your combat log counts.** MBR Tools reads `WoWCombatLog.txt`; the addon shares the results.
+- **Auto-update.** New versions install by themselves.
 
-| Boss & classes | Top DPS | Player search |
-|---|---|---|
-| ![](docs/2-boss-classes.png) | ![](docs/3-top-dps.png) | ![](docs/4-player-search.png) |
+## Screenshots
+
+**Dungeons.** The tooltip shows each boss's top for this week's affix.
+![Dungeons](screenshots/1-dungeons.png)
+
+**Boss and classes.** The best DPS of each class, sorted.
+![Boss and classes](screenshots/2-boss-classes.png)
+
+**Top DPS per spec.** Tyrannical | Fortified, with full fight details.
+![Top DPS](screenshots/3-top-dps.png)
+
+**Player search.** Every record of a player.
+![Player search](screenshots/4-player-search.png)
+
+**Update.** The button turns green when a new version is out.
+![Update](screenshots/5-update.png)
+
+**Users.** Who has the addon and which version.
+![Users](screenshots/6-users.png)
+
+**Settings.**
+![Settings](screenshots/7-settings.png)
+
+**MBR Tools.** Combat-log import and updates, outside the game.
+![MBR Tools](screenshots/8-mbr-tools.png)
 
 ## Install
 
 1. Download **[MythicBossRecords.zip](https://github.com/Ivry-WOW/MythicBossRecords/raw/main/MythicBossRecords.zip)**.
-2. Extract it to `World of Warcraft\Interface\AddOns\` so you get `AddOns\MythicBossRecords\MythicBossRecords.toc`.
-3. Double-click **`MBR Tools.cmd`** in that folder and choose **1 – Turn on automatic**. Do this once.
+2. Extract it to `World of Warcraft\Interface\AddOns\`. You should get `AddOns\MythicBossRecords\MythicBossRecords.toc`.
+3. Double-click **`MBR Tools.cmd`** in that folder and choose **1 – Turn on automatic**. You only do this once.
 
-Step 3 sets up a Windows task that runs every 15 minutes and at logon. It:
+From then on, every 15 minutes and at logon, MBR Tools:
 - imports new boss fights from your combat log;
-- installs new addon versions from this page (the version in `MythicBossRecords/Core.lua`, or a newer GitHub release).
+- installs new addon versions from this page.
 
 In game, type `/combatlog` before a key so WoW writes the log.
 
@@ -34,10 +57,10 @@ In game, type `/combatlog` before a key so WoW writes the log.
 
 | Button | What it does |
 |---|---|
-| **Update** | Turns green when someone has a newer version. Click it for the steps. MBR Tools installs updates automatically, then restart WoW. |
+| **Update** | Turns green when someone has a newer version. MBR Tools installs it; restart WoW. |
 | **Sync logs** | Shares the records from your combat log with everyone again. |
-| **Users** | Shows who has the addon: name, guild, version, last seen. |
-| **Settings** | Turn guild, server or friend sync on or off, chat announcements, the minimap button, and records per spec. |
+| **Users** | Who has the addon: name, guild, version, last seen. |
+| **Settings** | Guild, server or friend sync; chat announce; minimap button; records per spec. |
 
 ## Commands
 
@@ -53,8 +76,8 @@ In game, type `/combatlog` before a key so WoW writes the log.
 ## Privacy
 
 - Your combat log is read **only on your PC**. Nothing is uploaded.
-- The addon shares only boss records in game (name, class, spec, DPS, key).
-- MBR Tools only downloads updates from this repository.
+- In game, the addon shares only boss records (name, class, spec, DPS, key).
+- MBR Tools downloads updates only from this repository.
 
 ---
 Made by **Ivry** · Miracle · Evermoon
