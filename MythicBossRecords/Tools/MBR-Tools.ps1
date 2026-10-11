@@ -30,10 +30,20 @@ function Find-CombatLog {
     return (Join-Path $WowDir 'Logs\WoWCombatLog.txt')
 }
 
+# the addon shows this when "Sync logs" finds nothing (ToolsStatus.lua, loaded at login / reload)
+function Write-Status($text) {
+    try {
+        $t = $text.Replace('\', '\\').Replace('"', "'")
+        $lua = "local ADDON, ns = ...`r`nns.TOOLS_STATUS = { time = " + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + ', text = "' + $t + '" }' + "`r`n"
+        [IO.File]::WriteAllText((Join-Path $AddonDir 'ToolsStatus.lua'), $lua, (New-Object Text.UTF8Encoding($false)))
+    } catch {}
+}
+
 function Import-CombatLog {
     $log = Find-CombatLog
     if (-not (Test-Path $log)) {
         Log "No combat log yet ($log). In game type /combatlog before a key, then run this again."
+        Write-Status "No combat log found at $log. Type /combatlog in game before a key. If your WoW writes it somewhere else, put the full path of WoWCombatLog.txt in Tools\combatlog-path.txt."
         return $true
     }
     if (-not ('MBRLogImport' -as [type])) {
@@ -43,6 +53,7 @@ function Import-CombatLog {
     $t = [Diagnostics.Stopwatch]::StartNew()
     $summary = [MBRLogImport]::Run($log, $DataDir, $out, [bool]$FromStart)
     Log ("Combat log: {0} ({1:0}s). /reload in WoW to load it." -f $summary, $t.Elapsed.TotalSeconds)
+    Write-Status ("Combat log " + $log + ": " + $summary)
     return $true
 }
 
@@ -97,7 +108,7 @@ function Update-Addon {
         # copy over this folder; your own combat-log data and settings stay
         Get-ChildItem $src -Recurse -File | ForEach-Object {
             $rel = $_.FullName.Substring($src.Length + 1) -replace '/', '\'
-            if ($rel -eq 'LocalLogData.lua' -or $rel -eq 'Tools\update-source.txt' -or $rel -eq 'Tools\combatlog-path.txt') { return }
+            if ($rel -eq 'LocalLogData.lua' -or $rel -eq 'ToolsStatus.lua' -or $rel -eq 'Tools\update-source.txt' -or $rel -eq 'Tools\combatlog-path.txt') { return }
             $dest = Join-Path $AddonDir $rel
             $dir = Split-Path -Parent $dest
             if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir | Out-Null }
@@ -135,13 +146,15 @@ try {
             # the menu could not replace itself while it was open: do it now
             $newCmd = Join-Path $AddonDir 'MBR Tools.cmd.new'
             if (Test-Path $newCmd) { try { Move-Item $newCmd (Join-Path $AddonDir 'MBR Tools.cmd') -Force } catch {} }
+            $before = Get-LocalVersion
             try { [void](Update-Addon) } catch { $ok = $false }      # every minute (errors: no internet, etc.)
+            if ((Get-LocalVersion) -ne $before) { Remove-Item (Join-Path $DataDir 'lastimport.txt') -ErrorAction SilentlyContinue }
             # combat log: every 15 minutes (it reads only the new part)
             $stamp = Join-Path $DataDir 'lastimport.txt'
             $due = -not (Test-Path $stamp) -or ((Get-Date) - (Get-Item $stamp).LastWriteTime).TotalMinutes -ge 14.5
             if ($due -or $FromStart) {
                 Set-Content -Path $stamp -Value (Get-Date -Format s)
-                try { [void](Import-CombatLog) } catch { Log ('Combat log import failed: ' + $_.Exception.Message); $ok = $false }
+                try { [void](Import-CombatLog) } catch { Log ('Combat log import failed: ' + $_.Exception.Message); Write-Status ('Combat log import failed: ' + $_.Exception.Message); $ok = $false }
             }
         }
     }

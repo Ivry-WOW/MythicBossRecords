@@ -1,5 +1,9 @@
 # Changelog
 
+## V.1.6.5
+
+- "Sync logs" shows what MBR Tools found the last time it read your combat log (e.g. "No combat log found at ..."), so problems are easy to see.
+
 ## V.1.6.4
 
 - Update test (no changes).

@@ -10,7 +10,7 @@ local ADDON, ns = ...
 local PREFIX = "|cfff5b937MBR|r: "
 -- the version lives here (not only in the .toc: WoW reads the .toc only when the game starts,
 -- so after replacing files + /reload it would still report the old one)
-ns.VERSION = "1.6.4"
+ns.VERSION = "1.6.5"
 -- only keys of this level and higher count (live, sync, combat-log imports)
 ns.MIN_LEVEL = 9
 ns.ACCENT = { 0.96, 0.73, 0.22 }

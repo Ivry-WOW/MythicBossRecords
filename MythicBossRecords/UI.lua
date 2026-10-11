@@ -832,7 +832,13 @@ function UI:SyncLogs()
 	end
 	if #own == 0 then
 		ns.Sync:Hello()
-		StaticPopup_Show("MBR_UPDATE", "|cffffd100Your combat log has not been read yet.|r\n\n" ..
+		local st = ns.TOOLS_STATUS
+		if st and st.text then
+			StaticPopup_Show("MBR_UPDATE", "|cffffd100MBR Tools last ran " .. date("%d.%m %H:%M", st.time or 0) .. ":|r\n\n" .. st.text ..
+				"\n\n|cffffd100/reload|r after it reads new keys.")
+			return
+		end
+		StaticPopup_Show("MBR_UPDATE", "|cffffd100Your combat log has not been read yet|r (MBR Tools has not run on this PC).\n\n" ..
 			"WoW addons cannot open files, so a small tool next to the addon reads it:\n\n" ..
 			"Close WoW, open Interface\\AddOns\\MythicBossRecords and double-click |cffffd100MBR Tools.cmd|r, " ..
 			"then |cffffd1001|r (automatic: your new log is read every 15 minutes from now on).\n\n" ..
