@@ -207,6 +207,12 @@ function UI:Create()
 	logBtn:SetScript("OnLeave", GameTooltip_Hide)
 	self.logBtn = logBtn
 
+	local contact = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+	contact:SetPoint("RIGHT", logBtn, "LEFT", -10, 0)
+	contact:SetText("Contact IGN: |cffffffffIvryr|r")
+	contact:SetTextColor(0.85, 0.7, 0.35)
+	self.contact = contact
+
 	local crumb = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	crumb:SetPoint("LEFT", back, "RIGHT", 12, 0)
 	crumb:SetPoint("RIGHT", settingsBtn, "LEFT", -8, 0)

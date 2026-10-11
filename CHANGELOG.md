@@ -1,5 +1,9 @@
 # Changelog
 
+## V.1.6.1
+
+- Contact (IGN: Ivryr) in the bottom-right corner of the window.
+
 ## V.1.6
 
 - Only keys **+9 and higher** are counted.
